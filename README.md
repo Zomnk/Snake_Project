@@ -8,7 +8,9 @@
 
 ![fig2](https://github.com/Zomnk/Snake_Project/blob/main/fig/fig2.gif)
 
-观察上方机器人的运动，我们发现机器人在运动时每个link都在摆动。在这里我们引入Virtual Chassis: https://ieeexplore.ieee.org/document/6094645，通过数学方法，从蛇形机器人连续扭动的身体中抽象出一个宏观的、相对平稳的“虚拟参考系”，从而将机器人内部的形变运动与外部的宏观位移彻底解耦。记录上述运动步态中base_link（头部）和Virtual Chassis的轨迹信息，可见后者的轨迹更平滑，符合预期。
+观察上方机器人的运动，我们发现机器人在运动时每个link都在摆动。在这里我们引入**Virtual Chassis**: <https://ieeexplore.ieee.org/document/6094645>
+
+通过数学方法，从蛇形机器人连续扭动的身体中抽象出一个宏观的、相对平稳的“虚拟参考系”，从而将机器人内部的形变运动与外部的宏观位移彻底解耦。记录上述运动步态中base_link（头部）和Virtual Chassis的轨迹信息，可见后者的轨迹更平滑，符合预期。
 
 ![fig3](https://github.com/Zomnk/Snake_Project/blob/main/fig/fig3.png)
 
@@ -94,7 +96,7 @@
   python scripts/list_envs.py
   ```
 
-  > 本项目中使用的环境为 Snake-14DOF-VelocityTracking-Flat-v0 和 Snake-14DOF-VelocityTracking-Flat-Play-v0
+  > 本项目中使用的环境为 Snake-VelocityTracking-Flat-v0 和 Snake-VelocityTracking-Flat-Play-v0
 
 - 运行训练代码
 
@@ -141,18 +143,18 @@
   python scripts/list_envs.py
   ```
 
-  > 本项目中使用的环境为 Snake-14DOF-VelocityTracking-Flat-v0 和 Snake-14DOF-VelocityTracking-Flat-Play-v0
+  > 本项目中使用的环境为 Snake-VelocityTracking-Flat-v0 和 Snake-VelocityTracking-Flat-Play-v0
 
 - 运行训练代码
 
   ```bash
-  python scripts/rsl_rl/train.py --task Snake-14DOF-VelocityTracking-Flat-v0 --num_envs 4096 --headless
+  python scripts/rsl_rl/train.py --task Snake-VelocityTracking-Flat-v0 --num_envs 4096 --headless
   ```
 
 - 执行训练好的策略
 
   ```bash
-  python scripts/rsl_rl/play.py --task Snake-14DOF-VelocityTracking-Flat-Play-v0 --checkpoint <your policy> --video --headless
+  python scripts/rsl_rl/play.py --task Snake-VelocityTracking-Flat-Play-v0 --checkpoint <your policy> --video --headless
   ```
 
   
@@ -229,20 +231,6 @@
                 },
             },
         )
-        """
-        randomize_robot_material = EventTerm(
-            func=mdp.randomize_rigid_body_material,
-            mode="startup",
-            params={
-                "asset_cfg": SceneEntityCfg("robot"),
-                "static_friction_range": (0.1, 1.25),
-                "dynamic_friction_range": (0.1, 1.25),
-                "restitution_range": (0.0, 0.0),
-                "num_buckets": 64,
-                "make_consistent": True,
-            },
-        )
-        """
     ```
 
   * **奖励函数**：当前奖励函数较基础，可自行添加新的奖励函数，修改奖励函数的权重来促进训练
@@ -324,10 +312,10 @@
             activation="elu",
         )
         algorithm = RslRlPpoAlgorithmCfg(
-            value_loss_coef=1.0,
+            value_loss_coef=0.01,
             use_clipped_value_loss=True,
             clip_param=0.2,
-            entropy_coef=0.005,
+            entropy_coef=0.01,
             num_learning_epochs=5,
             num_mini_batches=4,
             learning_rate=1.0e-3,
@@ -363,4 +351,8 @@ sim2sim_eval.py运行后会生成25组指令对应的Virtual Chassis和base_link
 
 ![fig6](https://github.com/Zomnk/Snake_Project/blob/main/fig/fig6.jpg)
 
-请提交 **修改后的源码+评估最佳的策略+对应的评估结果**
+请提交以下内容给课程助教：
+
+1. **Snake_Project/tree/main/source/snake_project/snake_project/tasks/manager_based/velocity_tracking 压缩为zip文件** 
+2. **评估效果最佳的策略模型pt文件**
+3. **Snake_Project/tree/main/source/snake_project/snake_project/sim2sim/eval_output 压缩为zip文件**
