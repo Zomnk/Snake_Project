@@ -4,17 +4,17 @@
 
 蛇形机器人具备高冗余的自由度，依赖与地面的摩擦完成各种步态。本项目基于[IsaacLab](https://github.com/isaac-sim/IsaacLab.git)与[rsl_rl](https://github.com/leggedrobotics/rsl_rl)构建，旨在使用深度强化学习完成蛇形机器人的速度跟踪任务。本项目使用的蛇形机器人模型代号名称为14DOF-DW，其中14DOF表示机器人具有14个自由度，DW即double_wheel，表示机器人的底盘具有两个被动轮。蛇形机器人的运动方式如下图所示。
 
-<img src="D:\RL2\Project\snake_project\fig\fig1.jpg" style="zoom:50%;" />
+<img src="https://github.com/Zomnk/Snake_Project/blob/main/fig/fig1.jpg" style="zoom:50%;" />
 
-![fig2](D:\RL2\Project\snake_project\fig\fig2.gif)
+![fig2](https://github.com/Zomnk/Snake_Project/blob/main/fig/fig2.gif)
 
 观察上方机器人的运动，我们发现机器人在运动时每个link都在摆动。在这里我们引入Virtual Chassis: https://ieeexplore.ieee.org/document/6094645，通过数学方法，从蛇形机器人连续扭动的身体中抽象出一个宏观的、相对平稳的“虚拟参考系”，从而将机器人内部的形变运动与外部的宏观位移彻底解耦。记录上述运动步态中base_link（头部）和Virtual Chassis的轨迹信息，可见后者的轨迹更平滑，符合预期。
 
-![fig3](D:\RL2\Project\snake_project\fig\fig3.png)
+![fig3](https://github.com/Zomnk/Snake_Project/blob/main/fig/fig3.png)
 
 接着绘制Virtual Chassis与Base_link的速度情况，对比可见其速度的波动情况较小，符合我们的预期（vx速度方向相反是因为Virtual Chassis的X轴始终对齐蛇尾link）。
 
-![](D:\RL2\Project\snake_project\fig\fig4.png)
+![fig4](https://github.com/Zomnk/Snake_Project/blob/main/fig/fig4.png)
 
 本作业为蛇形机器人速度跟踪训练，command作用在Virtual Chassis上，通过在mujoco进行sim2sim迁移，进行固定速度指令组的追踪，评估训练算法在Virtual Chassis速度跟踪任务上面的**累积误差**。
 
@@ -114,7 +114,7 @@
 
 * 使用启智平台的镜像创建本项目
 
-![](D:\RL2\Project\snake_project\fig\fig5.jpg)
+![fig5](https://github.com/Zomnk/Snake_Project/blob/main/fig/fig5.jpg)
 
 - 进入配置好的anaconda环境
 
@@ -361,6 +361,6 @@ sim2sim_python.py运行后会将Virtual Chassis和base_link的速度与轨迹保
 
 sim2sim_eval.py运行后会生成25组指令对应的Virtual Chassis和base_link的速度、轨迹与累计**MAE**误差结果，保存到eval_output文件夹下
 
-![](D:\RL2\Project\snake_project\fig\fig6.jpg)
+![fig6](https://github.com/Zomnk/Snake_Project/blob/main/fig/fig6.jpg)
 
 请提交 **修改后的源码+评估最佳的策略+对应的评估结果**
