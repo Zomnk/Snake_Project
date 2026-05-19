@@ -90,6 +90,13 @@
   python -m pip install -e source/snake_project
   ```
 
+- 拉取Git LFS Assets（USD模型需要通过这个工具获取）
+
+  ```bash
+  git lfs install
+  git lfs pull
+  ```
+
 - 列出可以使用的环境
 
   ```bash
@@ -137,6 +144,13 @@
   python -m pip install -e source/snake_project
   ```
 
+- 拉取Git LFS Assets（USD模型需要通过这个工具获取）
+
+  ```bash
+  git lfs install
+  git lfs pull
+  ```
+  
 - 列出可以使用的环境
 
   ```bash

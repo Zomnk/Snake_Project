@@ -86,8 +86,8 @@ class SnakeVelocityCommandsCfg:
         velocity_marker_max_speed=0.75,
         velocity_marker_z_offset=0.10,
         ranges=mdp.VirtualChassisVelocityCommandCfg.Ranges(
-            lin_vel_x=(-0.1, 0.1),
-            lin_vel_y=(-0.1, 0.1),
+            lin_vel_x=(-0.4, 0.4),
+            lin_vel_y=(-0.2, 0.2),
             ang_vel_z=(-0.0, 0.0),
             heading=(-0.0, 0.0),
         ),
@@ -230,7 +230,7 @@ class SnakeVelocityRewardsCfg:
 
     track_lin_vel_xy_exp = RewTerm(
         func=mdp.VirtualChassisTrackLinVelXYExp,
-        weight=2.0,
+        weight=5.0,
         params={"command_name": "base_velocity", "std": 0.25, "asset_cfg": virtual_chassis_body_cfg()},
     )
     track_ang_vel_z_exp = RewTerm(
@@ -268,17 +268,17 @@ class SnakeVelocityTerminationsCfg:
 class SnakeVelocityCurriculumCfg:
     """Curriculum hooks for the velocity-tracking task."""
 
-    command = CurrTerm(
-        func=mdp.command_velocity_curriculum,
-        params={
-            "command_name": "base_velocity",
-            "reward_term_name": "track_lin_vel_xy_exp",
-            "max_curriculum": 0.4,
-            "min_curriculum": 0.1,
-            "step_size": 0.05,
-            "threshold_ratio": 0.8,
-        },
-    )
+    # command = CurrTerm(
+    #     func=mdp.command_velocity_curriculum,
+    #     params={
+    #         "command_name": "base_velocity",
+    #         "reward_term_name": "track_lin_vel_xy_exp",
+    #         "max_curriculum": 0.4,
+    #         "min_curriculum": 0.1,
+    #         "step_size": 0.05,
+    #         "threshold_ratio": 0.8,
+    #     },
+    # )
 
 
 @configclass
