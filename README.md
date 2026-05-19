@@ -176,6 +176,8 @@
 
 ## 代码可修改的部分
 
+本次任务的代码请修改 **Snake_7DOF**文件夹下的
+
 * **velocity_env_cfg.py**
 
   * **观测量**，PolicyCfg不可以修改，CriticCfg特权观测可以修改，噪声幅度与缩放比例可以修改
