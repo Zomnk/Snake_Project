@@ -187,3 +187,15 @@ class VirtualChassisTrackAngVelZExp(ManagerTermBase):
 
         ang_vel_error = torch.square(env.command_manager.get_command(command_name)[:, 2] - actual_ang_vel_z_vc)
         return torch.exp(-ang_vel_error / std**2)
+
+
+def contact_penalty(
+    env: "ManagerBasedRLEnv",
+    sensor_cfg: SceneEntityCfg,
+    threshold: float = 0.0,
+) -> torch.Tensor:
+    contact_sensor = env.scene.sensors[sensor_cfg.name]
+    net_forces = contact_sensor.data.net_forces_w_history[:, 0, :, :]
+    forces_on_bodies = net_forces[:, sensor_cfg.body_ids, :]
+    in_contact = torch.any(torch.norm(forces_on_bodies, dim=-1) > threshold, dim=1)
+    return in_contact.float()

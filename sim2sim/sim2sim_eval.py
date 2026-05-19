@@ -362,8 +362,17 @@ def compute_mae(
     vc_vy = data["vc_vy"][mask]
     mae_vx = float(np.mean(np.abs(cmd_vx - vc_vx)))
     mae_vy = float(np.mean(np.abs(cmd_vy - vc_vy)))
-    mae_planar = float(np.mean(np.sqrt((cmd_vx - vc_vx) ** 2 + (cmd_vy - vc_vy) ** 2)))
+    vc_wz = data["vc_wz"][mask]
+    mae_planar = float(np.mean(np.sqrt((cmd_vx - vc_vx) ** 2 + (cmd_vy - vc_vy) ** 2 + vc_wz ** 2)))
     return mae_planar, mae_vx, mae_vy
+
+
+def compute_wz_mae(data: Dict[str, np.ndarray], warmup: float) -> float:
+    t = data["t"]
+    mask = t >= warmup
+    if not np.any(mask):
+        return float("nan")
+    return float(np.mean(np.abs(data["vc_wz"][mask])))
 
 
 # ---------------------------------------------------------------------------
@@ -381,13 +390,14 @@ VERTICAL_LINE_STYLE = (0, (8, 4))
 
 def plot_summary_heatmap(
     vx_vals, vy_vals,
-    mae_planar_grid, mae_vx_grid, mae_vy_grid,
+    mae_planar_grid, mae_vx_grid, mae_vy_grid, mae_wz_grid,
     output_path: str,
 ):
-    fig, axes = plt.subplots(1, 3, figsize=(18, 5.5))
+    fig, axes = plt.subplots(2, 2, figsize=(14, 12))
 
-    titles = ["Planar MAE (m/s)", "vx MAE (m/s)", "vy MAE (m/s)"]
-    grids = [mae_planar_grid, mae_vx_grid, mae_vy_grid]
+    titles = ["Planar MAE", "vx MAE (m/s)", "vy MAE (m/s)", "wz MAE (rad/s)"]
+    grids = [mae_planar_grid, mae_vx_grid, mae_vy_grid, mae_wz_grid]
+    axes = axes.flatten()
     nx, ny = len(vx_vals), len(vy_vals)
 
     for ax, title, grid in zip(axes, titles, grids):
@@ -482,21 +492,23 @@ def plot_summary_velocity(
             d = all_data[key]
             t = d["t"]
             if direction == "vx":
-                cmd_val = vx
-                vc_val = d["vc_vx"]
-                ax.plot(t, np.full_like(t, cmd_val), color=CMD_COLOR, linestyle="--",
+                ax.plot(t, np.full_like(t, vx), color=CMD_COLOR, linestyle="--",
                         linewidth=CURVE_LINE_WIDTH, label="cmd")
-                ax.plot(t, vc_val, color=VC_COLOR, linestyle="-",
+                ax.plot(t, d["vc_vx"], color=VC_COLOR, linestyle="-",
                         linewidth=CURVE_LINE_WIDTH, label="vc")
                 ax.set_ylabel("vx (m/s)", fontsize=7)
-            else:
-                cmd_val = vy
-                vc_val = d["vc_vy"]
-                ax.plot(t, np.full_like(t, cmd_val), color=CMD_COLOR, linestyle="--",
+            elif direction == "vy":
+                ax.plot(t, np.full_like(t, vy), color=CMD_COLOR, linestyle="--",
                         linewidth=CURVE_LINE_WIDTH, label="cmd")
-                ax.plot(t, vc_val, color=VC_COLOR, linestyle="-",
+                ax.plot(t, d["vc_vy"], color=VC_COLOR, linestyle="-",
                         linewidth=CURVE_LINE_WIDTH, label="vc")
                 ax.set_ylabel("vy (m/s)", fontsize=7)
+            else:  # wz
+                ax.plot(t, np.zeros_like(t), color=CMD_COLOR, linestyle="--",
+                        linewidth=CURVE_LINE_WIDTH, label="cmd")
+                ax.plot(t, d["vc_wz"], color=VC_COLOR, linestyle="-",
+                        linewidth=CURVE_LINE_WIDTH, label="vc")
+                ax.set_ylabel("wz (rad/s)", fontsize=7)
             ax.set_title(f"vx={vx} vy={vy}", fontsize=8)
             ax.grid(True, alpha=GRID_ALPHA)
             ax.tick_params(labelsize=6)
@@ -530,6 +542,7 @@ def run_eval(args):
     mae_planar_grid = np.full((nx, ny), np.nan)
     mae_vx_grid = np.full((nx, ny), np.nan)
     mae_vy_grid = np.full((nx, ny), np.nan)
+    mae_wz_grid = np.full((nx, ny), np.nan)
     all_data: dict = {}
     mae_table: list = []
 
@@ -549,22 +562,24 @@ def run_eval(args):
             print(f"[{count}/{total}] Running vx={vx:+.1f} vy={vy:+.1f} ... ", end="", flush=True)
             data = runner.run(seconds=args.seconds)
             mae_planar, mae_vx, mae_vy = compute_mae(float(vx), float(vy), data, warmup=args.warmup)
+            mae_wz = compute_wz_mae(data, warmup=args.warmup)
             print(f"planar_MAE={mae_planar:.4f}")
             key = f"vx{vx}_vy{vy}"
             all_data[key] = data
             mae_planar_grid[i, j] = mae_planar
             mae_vx_grid[i, j] = mae_vx
             mae_vy_grid[i, j] = mae_vy
+            mae_wz_grid[i, j] = mae_wz
             mae_table.append({
                 "vx": float(vx), "vy": float(vy),
-                "planar_mae": mae_planar, "vx_mae": mae_vx, "vy_mae": mae_vy,
+                "planar_mae": mae_planar, "vx_mae": mae_vx, "vy_mae": mae_vy, "wz_mae": mae_wz,
             })
 
     # --- output plots ---
     out_dir = args.output_dir
     os.makedirs(out_dir, exist_ok=True)
 
-    plot_summary_heatmap(vx_vals, vy_vals, mae_planar_grid, mae_vx_grid, mae_vy_grid,
+    plot_summary_heatmap(vx_vals, vy_vals, mae_planar_grid, mae_vx_grid, mae_vy_grid, mae_wz_grid,
                          os.path.join(out_dir, "summary_heatmap.png"))
     plot_summary_trajectory(vx_vals, vy_vals, all_data, mae_planar_grid,
                             os.path.join(out_dir, "summary_trajectory.png"))
@@ -572,6 +587,8 @@ def run_eval(args):
                           os.path.join(out_dir, "summary_velocity_vx.png"))
     plot_summary_velocity(vx_vals, vy_vals, all_data, "vy",
                           os.path.join(out_dir, "summary_velocity_vy.png"))
+    plot_summary_velocity(vx_vals, vy_vals, all_data, "wz",
+                          os.path.join(out_dir, "summary_velocity_wz.png"))
 
     # --- data export ---
     data_dir = os.path.join(out_dir, "data")
@@ -581,7 +598,7 @@ def run_eval(args):
 
     csv_path = os.path.join(data_dir, "eval_mae.csv")
     with open(csv_path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["vx", "vy", "planar_mae", "vx_mae", "vy_mae"])
+        writer = csv.DictWriter(f, fieldnames=["vx", "vy", "planar_mae", "vx_mae", "vy_mae", "wz_mae"])
         writer.writeheader()
         writer.writerows(mae_table)
     print(f"[Data] Saved: {csv_path}")
