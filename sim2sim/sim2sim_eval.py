@@ -5,7 +5,7 @@ sim2sim_eval.py
 ---------------
 Batch velocity-tracking evaluation for the 14DOF-DW snake robot.
 
-Sweeps a 5x5 grid of (vx, vy) commands over [-0.4, 0.4] with step 0.2,
+Sweeps a 5x5 grid of (vx, vy) commands (vx: -0.2..0.2 step 0.1, vy: -0.1..0.1 step 0.05),
 runs 15 s per condition (first 3 s warm-up excluded from MAE), and produces:
   - summary_heatmap.png       (planar / vx / vy MAE)
   - summary_trajectory.png     (base_link + VC XY per condition)
@@ -536,8 +536,8 @@ def plot_summary_velocity(
 # ---------------------------------------------------------------------------
 
 def run_eval(args):
-    vx_vals = np.arange(-0.4, 0.41, 0.2)
-    vy_vals = np.arange(-0.2, 0.21, 0.1)
+    vx_vals = np.arange(-0.2, 0.21, 0.1)
+    vy_vals = np.arange(-0.1, 0.11, 0.05)
     nx, ny = len(vx_vals), len(vy_vals)
 
     mae_planar_grid = np.full((nx, ny), np.nan)
@@ -645,7 +645,7 @@ def main():
     print(f"[Eval] Policy : {args.policy}")
     print(f"[Eval] MJCF   : {args.mjcf}")
     print(f"[Eval] Device : {args.device}")
-    print(f"[Eval] Grid   : 5x5  (vx ∈ [-0.4, -0.2, 0.0, 0.2, 0.4], vy ∈ [-0.2, -0.1, 0.0, 0.1, 0.2])")
+    print(f"[Eval] Grid   : 5x5  (vx ∈ [-0.2, -0.1, 0.0, 0.1, 0.2], vy ∈ [-0.1, -0.05, 0.0, 0.05, 0.1])")
     print(f"[Eval] Each   : {args.seconds}s  (warm-up {args.warmup}s excluded)")
     run_eval(args)
 
