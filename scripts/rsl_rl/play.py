@@ -28,7 +28,7 @@ parser.add_argument("--task", type=str, default=None, help="Name of the task.")
 parser.add_argument(
     "--agent", type=str, default="rsl_rl_cfg_entry_point", help="Name of the RL agent configuration entry point."
 )
-parser.add_argument("--seed", type=int, default=None, help="Seed used for the environment")
+parser.add_argument("--seed", type=int, default=42, help="Seed used for the environment")
 parser.add_argument(
     "--use_pretrained_checkpoint",
     action="store_true",
@@ -61,7 +61,10 @@ simulation_app = app_launcher.app
 
 import gymnasium as gym
 import os
+import random
 import time
+
+import numpy as np
 import torch
 
 from rsl_rl.runners import DistillationRunner, OnPolicyRunner
@@ -106,6 +109,16 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # note: certain randomizations occur in the environment initialization so we set the seed here
     env_cfg.seed = agent_cfg.seed
     env_cfg.sim.device = args_cli.device if args_cli.device is not None else env_cfg.sim.device
+
+    # fix all random seeds for reproducibility
+    random.seed(agent_cfg.seed)
+    np.random.seed(agent_cfg.seed)
+    torch.manual_seed(agent_cfg.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(agent_cfg.seed)
+        torch.cuda.manual_seed_all(agent_cfg.seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
     # specify directory for logging experiments
     log_root_path = os.path.join("logs", "rsl_rl", agent_cfg.experiment_name)

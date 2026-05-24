@@ -108,6 +108,7 @@ class VirtualChassisTrackLinVelXYExp(ManagerTermBase):
         command_name: str,
         std: float,
         asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+        linear_coef: float = 0.0,
     ) -> torch.Tensor:
         body_pos_w = self.asset.data.body_pos_w[:, self.asset_cfg.body_ids, :]
         body_lin_vel_w = self.asset.data.body_lin_vel_w[:, self.asset_cfg.body_ids, :]
@@ -134,7 +135,9 @@ class VirtualChassisTrackLinVelXYExp(ManagerTermBase):
             torch.square(env.command_manager.get_command(command_name)[:, :2] - actual_lin_vel_vc[:, :2]),
             dim=1,
         )
-        return torch.exp(-lin_vel_error / std**2)
+        exp_reward = torch.exp(-lin_vel_error / std**2)
+        lin_penalty = linear_coef * torch.sqrt(lin_vel_error)
+        return exp_reward - lin_penalty
 
 
 class VirtualChassisTrackAngVelZExp(ManagerTermBase):

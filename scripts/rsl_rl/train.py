@@ -25,7 +25,7 @@ parser.add_argument("--task", type=str, default=None, help="Name of the task.")
 parser.add_argument(
     "--agent", type=str, default="rsl_rl_cfg_entry_point", help="Name of the RL agent configuration entry point."
 )
-parser.add_argument("--seed", type=int, default=None, help="Seed used for the environment")
+parser.add_argument("--seed", type=int, default=42, help="Seed used for the environment")
 parser.add_argument("--max_iterations", type=int, default=None, help="RL Policy training iterations.")
 parser.add_argument(
     "--distributed", action="store_true", default=False, help="Run training with multiple GPUs or nodes."
@@ -78,6 +78,9 @@ if version.parse(installed_version) < version.parse(RSL_RL_VERSION):
 import gymnasium as gym
 import logging
 import os
+import random
+
+import numpy as np
 import torch
 from datetime import datetime
 
@@ -106,7 +109,7 @@ import snake_project.tasks  # noqa: F401
 
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
-torch.backends.cudnn.deterministic = False
+torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
 
@@ -140,6 +143,14 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
         seed = agent_cfg.seed + app_launcher.local_rank
         env_cfg.seed = seed
         agent_cfg.seed = seed
+
+    # fix all random seeds for reproducibility
+    random.seed(agent_cfg.seed)
+    np.random.seed(agent_cfg.seed)
+    torch.manual_seed(agent_cfg.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(agent_cfg.seed)
+        torch.cuda.manual_seed_all(agent_cfg.seed)
 
     # specify directory for logging experiments
     log_root_path = os.path.join("logs", "rsl_rl", agent_cfg.experiment_name)

@@ -23,6 +23,7 @@ import argparse
 import csv
 import math
 import os
+import random
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
@@ -32,6 +33,17 @@ import numpy as np
 import torch
 
 matplotlib.use("Agg")
+
+# fix seeds for reproducibility
+SEED = 42
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed(SEED)
+    torch.cuda.manual_seed_all(SEED)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
 
 try:
     import mujoco
@@ -402,9 +414,11 @@ def plot_summary_heatmap(
     nx, ny = len(vx_vals), len(vy_vals)
 
     for ax, title, grid in zip(axes, titles, grids):
+        dx = (vx_vals[-1] - vx_vals[0]) / (nx - 1) / 2 if nx > 1 else 0.05
+        dy = (vy_vals[-1] - vy_vals[0]) / (ny - 1) / 2 if ny > 1 else 0.025
         im = ax.imshow(grid, origin="lower", cmap="YlOrRd", aspect="auto",
-                       extent=[vy_vals[0] - 0.1, vy_vals[-1] + 0.1,
-                               vx_vals[0] - 0.1, vx_vals[-1] + 0.1])
+                       extent=[vy_vals[0] - dy, vy_vals[-1] + dy,
+                               vx_vals[0] - dx, vx_vals[-1] + dx])
         for i in range(nx):
             for j in range(ny):
                 ax.text(vy_vals[j], vx_vals[i], f"{grid[i, j]:.3f}",
@@ -560,7 +574,7 @@ def run_eval(args):
                 cmd_wz=0.0,
             )
             runner = EvalRunner(args.mjcf, args.policy, cfg)
-            print(f"[{count}/{total}] Running vx={vx:+.1f} vy={vy:+.1f} ... ", end="", flush=True)
+            print(f"[{count}/{total}] Running vx={vx:+.2f} vy={vy:+.2f} ... ", end="", flush=True)
             data = runner.run(seconds=args.seconds)
             mae_planar, mae_vx, mae_vy = compute_mae(float(vx), float(vy), data, warmup=args.warmup)
             mae_wz = compute_wz_mae(data, warmup=args.warmup)
@@ -610,10 +624,10 @@ def run_eval(args):
     print(f"Warm-up: {args.warmup}s excluded")
     best_idx = np.nanargmin(mae_planar_grid)
     best_i, best_j = np.unravel_index(best_idx, (nx, ny))
-    print(f"Best planar MAE: {mae_planar_grid[best_i, best_j]:.4f} @ vx={vx_vals[best_i]:+.1f} vy={vy_vals[best_j]:+.1f}")
+    print(f"Best planar MAE: {mae_planar_grid[best_i, best_j]:.4f} @ vx={vx_vals[best_i]:+.2f} vy={vy_vals[best_j]:+.2f}")
     worst_idx = np.nanargmax(mae_planar_grid)
     worst_i, worst_j = np.unravel_index(worst_idx, (nx, ny))
-    print(f"Worst planar MAE: {mae_planar_grid[worst_i, worst_j]:.4f} @ vx={vx_vals[worst_i]:+.1f} vy={vy_vals[worst_j]:+.1f}")
+    print(f"Worst planar MAE: {mae_planar_grid[worst_i, worst_j]:.4f} @ vx={vx_vals[worst_i]:+.2f} vy={vy_vals[worst_j]:+.2f}")
     print(f"{'='*55}")
 
 
