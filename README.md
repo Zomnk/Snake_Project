@@ -46,10 +46,11 @@
     ```bash
     pip install "isaacsim[all,extscache]==5.1.0" --extra-index-url https://pypi.nvidia.com
 
-- 克隆IsaacLab的项目，由于作者使用的是老版本的IsaacLab，直接克隆最新的可能会报错，因此作者将本版本上传到Github上，请克隆作者的版本。
+- 克隆IsaacLab的项目，由于作者使用的是老版本的IsaacLab，直接克隆最新的可能会报错，因此作者将本版本上传到Github上，请克隆作者的版本。【或者直接解压压缩包】
 
     ```bash
     git clone https://github.com/Zomnk/Isaac_Old_Version.git
+    # 克隆后请将文件夹名称修改为IsaacLab
     ```
 
 - 接下来安装IsaacLab的环境
@@ -100,7 +101,7 @@
 - 列出可以使用的环境
 
   ```bash
-  python scripts/list_envs.py
+  python scripts/list_envs.py --headless
   ```
 
   > 本项目中使用的环境为 Snake-VelocityTracking-Flat-v0 和 Snake-VelocityTracking-Flat-Play-v0
@@ -108,7 +109,7 @@
 - 运行训练代码
 
   ```bash
-  python scripts/rsl_rl/train.py --task Snake-VelocityTracking-Flat-v0 --num_envs 4096
+  python scripts/rsl_rl/train.py --task Snake-VelocityTracking-Flat-v0 --num_envs 4096 --headless
   ```
 
 - 执行训练好的策略
@@ -130,6 +131,22 @@
   ```bash
   conda env list
   conda activate lab23
+  ```
+
+- 克隆IsaacLab的项目，由于作者使用的是老版本的IsaacLab，直接克隆最新的可能会报错，因此作者将本版本上传到Github上，请克隆作者的版本。【或者直接解压压缩包】
+
+  ```bash
+  git clone https://github.com/Zomnk/Isaac_Old_Version.git
+  # 克隆后请将文件夹名称修改为IsaacLab
+  ```
+
+- 接下来安装IsaacLab的环境
+
+  ```bash
+  # Linux
+  ./isaaclab.sh --install # or "./isaaclab.sh -i"
+  # Windows
+  isaaclab.bat --install :: or "isaaclab.bat -i"
   ```
 
 - 克隆本训练项目
