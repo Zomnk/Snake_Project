@@ -197,7 +197,7 @@
 
 * **velocity_env_cfg.py**
 
-  * **观测量**，PolicyCfg不可以修改，CriticCfg特权观测可以修改，噪声幅度与缩放比例可以修改
+  * **观测量**：PolicyCfg可以修改，必须是本体的观测信息（本体是14个舵机，可以反馈位置、速度、扭矩、温度信息，头部IMU是一个六轴的IMU，可以反馈三轴加速度和三轴角速度）；CriticCfg特权观测不必局限于本体观测，可以任意修改。噪声幅度与缩放比例可以修改。
 
     ```python
     class SnakeVelocityObservationsCfg:
@@ -241,7 +241,7 @@
         critic: CriticCfg = CriticCfg()
     ```
 
-  * **域随机化**：当前没有开启域随机化内容，如果sim2sim状况不理想，可考虑添加域随机化内容增强策略的鲁棒性
+  * **域随机化**：当前没有开启域随机化内容，如果sim2sim状况不理想，可考虑添加域随机化内容增强策略的鲁棒性。
 
     ```python
     class SnakeVelocityEventCfg:
@@ -266,7 +266,7 @@
         )
     ```
 
-  * **奖励函数**：当前奖励函数较基础，可自行添加新的奖励函数，修改奖励函数的权重来促进训练
+  * **奖励函数**：当前奖励函数较基础，可自行添加新的奖励函数，修改奖励函数的权重来促进训练。
 
     ```Python
     class SnakeVelocityRewardsCfg:
@@ -291,7 +291,7 @@
         motion_coordination = RewTerm(func=mdp.motion_coordination, weight=-0.3, params={"asset_cfg": yaw_joint_cfg()})
     ```
 
-  * **课程学习**：可以修改当前课程学习的实现形式与相关参数，来促进训练的平稳
+  * **课程学习**：可以修改当前课程学习的实现形式与相关参数，来促进训练的平稳。
 
     ```python
     class SnakeVelocityCurriculumCfg:
@@ -309,7 +309,7 @@
         )
     ```
 
-  - **action输出**：若端到端性能不佳，可考虑其他方法
+  - **action输出**：若端到端性能不佳，可考虑其他方法。
 
     ```python
     @configclass
